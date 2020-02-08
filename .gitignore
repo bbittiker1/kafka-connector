@@ -1,0 +1,10 @@
+logfile
+
+node_modules/
+.env
+
+*.log
+
+.idea/
+
+
