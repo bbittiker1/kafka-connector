@@ -1,10 +1,10 @@
 logfile
 
 node_modules/
-.env
+.env*
 
 *.log
 
 .idea/
 
-
+.DS_Store

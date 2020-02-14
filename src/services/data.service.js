@@ -4,13 +4,13 @@ import logger from "../util/logger";
 export const dataService = {
     connect: () => {
         return sequelize.authenticate()
-            .then(() => {
-                return sequelize.sync()
-            }).catch(err => {
-                logger.error(`Unable to connect to the database. ${err.name}: ${err.message}`);
+        .then(() => {
+            return sequelize.sync()
+        }).catch(err => {
+            logger.error(`Unable to connect to the database. ${err.name}: ${err.message}`);
 
-                throw err;
-            });
+            throw err;
+        });
     },
 
     device: {

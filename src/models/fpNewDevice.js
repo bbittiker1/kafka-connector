@@ -9,32 +9,10 @@ const fpIotDevices = (sequelize, Datatypes) => {
                 // autoIncrement: true,
                 // primaryKey: true
             },
-            aff_id: {
-                type: Datatypes.STRING,
-            },
-            router_id: {
-                type: Datatypes.STRING,
-            },
             mac: {
                 type: Datatypes.STRING,
             },
-            ip: {
-                type: Datatypes.STRING,
-            },
-            hostname: {
-                type: Datatypes.STRING,
-            },
-            topic: {
-                type: Datatypes.STRING,
-            },
-            event_type: {
-                type: Datatypes.STRING,
-            },
-            tot_dev_cnt: {
-                type: Datatypes.INTEGER,
-            },
-        },
-        {
+        }, {
             tableName: tableName,
 
             // don't use camelcase for automatically added attributes but underscore style
@@ -45,9 +23,6 @@ const fpIotDevices = (sequelize, Datatypes) => {
             // transform all passed model names (first parameter of define) into plural.
             // if you don't want that, set the following
             freezeTableName: true,
-            createdAt: false,
-            deletedAt: false,
-            updatedAt: false,
 
             classMethods: {
                 // associate : function(models) {

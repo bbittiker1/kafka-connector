@@ -13,11 +13,10 @@ const sequelize = new Sequelize(config.database, config.databaseUser, config.dat
 });
 
 const models = {
-    FingerPrintNewDevice: sequelize.import('./fingerPrintNewDevice')
+    FingerPrintNewDevice: sequelize.import('./fpNewDevice')
 };
 
 async function executeRawSqlQuery(q, options) {
-
     let myOptions = {
         type: sequelize.QueryTypes.SELECT,
         plain: false,

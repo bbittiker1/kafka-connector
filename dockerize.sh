@@ -1,20 +1,17 @@
 #!/bin/bash
 
 # Kill running containers.
-sudo docker kill iotchangelog-server 2>/dev/null
+sudo docker kill kafka-connect-server 2>/dev/null
 
 # Build server image.
-sudo docker build . -t iotchangelog-server
+sudo docker build . -t kafka-connect-server
 
 echo `pwd`/config
 
 # Start server container.
-sudo docker run -id \
+sudo docker run -i \
     -v `pwd`/config/.env.docker.local:/usr/app/.env \
-    --name  iotchangelog-server \
+    --name  kafka-connect-server \
     --network iotchangelog_network \
-    -p 3000:3000 \
-    --rm iotchangelog-server:latest
-
-#sudo docker exec -it iotchangelog-server /bin/sh -c 'npm run db:migrate:local'
-#sudo docker exec -it iotchangelog-server /bin/sh -c 'npm run db:seed:local'
+    -p 3005:3000 \
+    --rm kafka-connect-server

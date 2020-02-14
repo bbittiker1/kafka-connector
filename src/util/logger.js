@@ -3,6 +3,8 @@ const path = require('path');
 const PROJECT_ROOT = path.join(__dirname, '..');
 const appRoot = require('app-root-path');
 
+import appConfig from '../config/app';
+
 const { combine, timestamp, printf, prettyPrint, splat, colorize } = format;
 
 /**
@@ -66,14 +68,16 @@ const _logger = createLogger({
         })
     ),
     transports: [
-        new transports.Console(),
+        new transports.Console({
+            level: appConfig.logLevel || 'debug'
+        }),
         new transports.File({
             filename: `${appRoot}/logs/info.log`,
-            level: 'info'
+            level: appConfig.logLevel || 'debug'
         }),
         new transports.File({
             filename: `${appRoot}/logs/app.log`,
-            level: 'info'
+            level: appConfig.logLevel
         })
     ]
 });
