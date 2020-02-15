@@ -96,25 +96,24 @@ class Logger {
 
 const logger = new Logger(_logger);
 
-module.exports = logger;
-
-module.exports.info = function () {
+logger.info = function () {
     const m = formatLogArguments(arguments);
     logger._info(m);
 };
 
-module.exports.warn = function () {
+logger.warn = function () {
     const m = formatLogArguments(arguments);
     logger._warn(m);
 };
 
-module.exports.debug = function () {
+logger.debug = function () {
     const m = formatLogArguments(arguments);
     logger._debug(m);
 };
 
-module.exports.error = function () {
+logger.error = function () {
     const m = formatLogArguments(arguments);
     logger._error(m);
 };
 
+export default logger;

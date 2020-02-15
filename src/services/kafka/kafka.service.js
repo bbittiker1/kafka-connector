@@ -1,31 +1,11 @@
-const kafka = require('kafka-node');
+import config from "../../config/app";
 
-export const connect = (config, options) => {
-    const connection =  new kafka.KafkaClient({ host: config.host });
-    const offset = new kafka.Offset(connection);
+const { Kafka, CompressionTypes, logLevel  } = require('kafkajs');
 
-    return { connection, offset };
+export const kafkaInstance = (config) => {
+    return new Kafka({
+        clientId: config.kafka.clientId,
+        brokers: config.kafka.hosts
+    })
 };
 
-export const getConsumer = (connection, topics, topicOptions) => {
-    return new kafka.Consumer(
-        connection,
-        topics,
-        topicOptions );
-};
-
-export const getConsumerGroup = (options, topicName) => {
-    return new kafka.ConsumerGroup(options, topicName);
-};
-
-export const getProducer = (connection, options) => {
-    return new kafka.Producer(connection, options);
-};
-
-export const configureTopic = (topic) => {
-    return [{
-        topic: topic, partitions: 1
-    }, {
-        topic: topic, partitions: 0
-    }];
-};

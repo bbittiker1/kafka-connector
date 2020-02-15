@@ -1,71 +1,71 @@
+import {kafkaInstance} from "./kafka.service";
 import { RestService } from "../rest.service";
-import { dataService } from "../data.service";
-import { getConsumerGroup } from "./kafka.service";
+
 import logger from '../../util/logger';
-import appConfig from "../../config/app";
 
 const util = require('util');
 
 export default class ConsumerService {
-    constructor(topic){
-        this.consumerGroupOptions = appConfig.kafka.consumerGroupOptions;
+    constructor(config, topic){
+        // this.consumerGroupOptions = appConfig.kafka.consumerGroupOptions;
         this.topic = topic;
         this.restService = new RestService( this.topic );
+        this.kafka = kafkaInstance(config);
+        this.config = config;
     }
 
-    async persist(message) {
+    async persist(device) {
+        if(!device) {
+            return;
+        }
+
+        const message = JSON.parse(device);
+
         if (!message.mac) {
             return;
         }
 
         try {
             message.mac = message.mac.replace(/:/g, "");
+
+            const url = this.config.baseUrl + message.mac;
+
+            const cleanMessage = JSON.stringify({
+                "did": message.did,
+                "type": message.type,
+                "manufacturer": message.manufacturer,
+                "make": "",
+                "model": "4K",
+                "icon": "appletv"
+            });
+
+            return await this.restService.post(url, cleanMessage)
         } catch(e) {
             logger.error(e);
         }
-
-        return await this.restService.execute(message)
     }
 
-    start() {
-        const consumerGroup = getConsumerGroup( this.consumerGroupOptions, this.topic );
-        const restService = new RestService( this.topic );
-        const that = this;
+    async start() {
+        const consumer = this.kafka.consumer({ groupId: this.config.kafka.groupId });
+        await consumer.connect();
 
-        consumerGroup.on('message', function (message) {
-            try {
-                const clientId = this.client.clientId;
-                const topic = message.topic;
-                const partition = message.partition;
-                const offset = message.offset;
-
-                // logger.debug(`clientId: ${clientId} topic: "${topic}" partition: ${partition} offset: ${offset}`);
-
-                const device = JSON.parse(message.value);
-
-                that.persist(device)
-                    .then((res, err) => {
-                        logger.info( util.format('message: %o', message));
-                    })
-                    .catch(err => {
-                        logger.error(util.format('%o', err.config));
-                        logger.error(util.format('%o', err.response.status));
-                        logger.error(util.format('%o', err.response.statusText));
-                    });
-
-                // dataService.device.create(device)
-                //     .catch(err => {
-                //         logger.error(err);
-                //     })
-            } catch (e) {
-                logger.error(e);
-            }
+        this.config.kafka.topics.map(async t => {
+            await consumer.subscribe({topic: t, fromBeginning: true});
         });
 
-        consumerGroup.on('error', function onError(error) {
-            logger.error(error);
-        });
+        await consumer.run({
+            eachMessage: async ({ topic, partition, message }) => {
 
-        logger.info(`Started Consumer for topic ${this.topic} in group ${this.consumerGroupOptions.groupId}.`);
+                const device = message.value.toString();
+
+                logger.info(util.format('%o', {
+                    topic: topic,
+                    partition: partition,
+                    value: device
+                }));
+
+                await this.persist(device);
+            },
+        })
     };
 }

@@ -1,17 +1,15 @@
 import axios from "axios";
 
 import config from "../config/app";
-import { httpMethods, kafka } from "../config/constants";
+import { httpMethods } from "../config/constants";
 import { getHmac } from "./auth.service";
 import logger from "../util/logger";
-import CryptoJS from "crypto-js";
 
 export class RestService  {
     constructor( topic ) {
         this.baseUrl = config.baseUrl;
         this.topic = topic;
-        this.method = config.kafka.topicRestMethod[topic];
-        this._setExecute(this.method);
+        // this.method = config.kafka.topicRestMethod[topic];
 
         this._axiosInstance = axios.create({
             baseURL: this.baseUrl,
@@ -19,42 +17,15 @@ export class RestService  {
         });
 
         this._axiosInstance.defaults.headers.common['Content-Type'] = "application/json";
-
-        // this._axiosInstance.defaults.headers.common = {
-        //     'Authorization': getHmac(this.method, this.baseUrl, request.body)
-        // };
     }
 
-    _setExecute() {
-        this.execute = (obj => {
-            switch (obj.method ) {
-                case httpMethods.post:
-                    return obj.post;
-                case httpMethods.put:
-                    return obj.put;
-                default:
-                    throw new Error("Invalid kafka topic.")
-            }
-        })(this);
-    }
-
-    async post(message) {
+    async post(url, message) {
         try {
-            const url = this.baseUrl + message.mac;
-
-            const myMessage = JSON.stringify({
-                "did": message.did,
-                "type": message.type,
-                "manufacturer": message.manufacturer,
-                "make": "",
-                "model": "4K",
-                "icon": "appletv"
-            });
-
-            this._axiosInstance.defaults.headers.post['Authorization'] = getHmac('POST', url, myMessage);
+            // const hmac =  getHmac(httpMethods.post, url, message);
+            this._axiosInstance.defaults.headers.post['Authorization'] = getHmac(httpMethods.post, url, message);
 
             // fetch data from a url endpoint
-            return await this._axiosInstance.post(url, myMessage);
+            return await this._axiosInstance.post(url, message);
         } catch(err) {
             logger.error(err);
             throw err;

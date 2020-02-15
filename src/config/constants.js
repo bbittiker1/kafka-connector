@@ -6,8 +6,8 @@ export const httpMethods = {
 };
 
 export const kafka = {
-    topics: {
-        newDevice: "new_device",
-        updateDevice: "update_device"
-    }
+    // topics: {
+    //     newDevice: "new_device",
+    //     updateDevice: "update_device"
+    // }
 };

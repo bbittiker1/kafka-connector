@@ -2,94 +2,52 @@
 import express from 'express';
 import process from 'process';
 import 'dotenv/config';
-import cors from 'cors';
-import bodyParser from 'body-parser';
-import cookieParser from 'cookie-parser';
-import passport from 'passport';
-import models from './models';
 
-import appLogger from './util/logger';
-import { dataService } from "./services/data.service";
-import ConsumerService from './services/kafka/consumer.service';
-import { setRoutes } from './routes';
-import { morganConfig } from "./config/morgan.config";
-import { passportConfig } from "./config/passport.config";
-import { responseHeaders } from "./config/response.config";
-
-import config from "./config/app";
+// import { kafkaInstance } from "./services/kafka/kafka.service"
+import ConsumerService from "./services/kafka/consumer.service";
+import config from './config/app';
+import logger from './util/logger';
 
 const app = express();
 
-//
-// Application-Level Middleware
-//
-app.use(cors());
-
-//
-// HTTP request logger middleware.
-//
-app.use(morganConfig());
-
-//
-// Initialize passport configuration.
-//
-// Imports our configuration file which holds our verification callbacks and things
-// like the secret for signing.
-//
-passportConfig(app, passport);
-
-//
-// Application-Level Middleware
-//
-app.use(cors());
-app.use(responseHeaders);
-
-app.disable( 'x-powered-by' ) ;
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
-// app.use(cookieParser(config.secret));
-
 // Log important environment variables
-['NODE_ENV', 'KAFKA_HOST', 'REST_HOST', 'CONSUMER_GROUP', 'API_KEY_ID', 'PORT', 'HMAC_SCHEME'].map(e =>
-    appLogger.debug(`ENV ${e}: ${process.env[e]}`)
+['NODE_ENV', 'KAFKA_HOST', 'REST_HOST', 'CONSUMER_GROUP', 'API_KEY_ID', 'PORT', 'HMAC_SCHEME', 'KAFKA_TOPICS', 'KAFKA_HOSTS'].map(e =>
+    logger.debug(`ENV ${e}: ${process.env[e]}`)
 );
 
+// async function doKafka() {
+//     const kafka = kafkaInstance(config);
+//     const consumer = kafka.consumer({ groupId: config.kafka.groupId });
+//     await consumer.connect();
 //
-// Resources available for each request.
+//     config.kafka.topics.map(async t => {
+//         await consumer.subscribe({topic: t, fromBeginning: true});
+//     });
 //
-app.use(async (req, res, next) => {
-    req.context = {
-        models,
-        // currentUser: await loginService.getCurrentUser()
-    };
-    next();
-});
-
-//
-// Set and secure our routes.
-//
-setRoutes(app, passport);
+//     await consumer.run({
+//         eachMessage: async ({ topic, partition, message }) => {
+//             console.log({
+//                 topic: topic,
+//                 partition: partition,
+//                 value: message.value.toString()
+//             })
+//         },
+//     })
+// }
 
 (async () => {
     try {
-        // Attempt to connect to DB.
-        await dataService.connect();
+        const port = config.port;
+        app.listen(port, () => {
+            logger.info(`App listening on port ${port}!`);
 
-        app.listen(process.env.PORT, () => {
-            appLogger.info(`App listening on port ${process.env.PORT}!`);
-
-            //
-            // Start the kafka consumer service, which listens for kafka device events
-            // and persists them to a datastore.
-            //
-            config.kafka.topics.map(topic => {
-                new ConsumerService(topic).start();
-            })
+            config.kafka.topics.map(async topic => {
+                new ConsumerService(config, topic).start();
+            });
         });
     } catch(e) {
-        appLogger.error(e);
-        appLogger.error('Shutting down...');
+        logger.error(e);
+        logger.error('Shutting down...');
         process.exit(1);
     }
 })();

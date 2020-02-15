@@ -20,12 +20,14 @@ export default {
     logLevel: process.env['LOG_LEVEL'],
 
     kafka: {
-        topics: [kafka.topics.newDevice, kafka.topics.updateDevice],
+        clientId: process.env['KAFKA_CLIENT_ID'],
+        topics: process.env['KAFKA_TOPICS'].split(","),
         topicRestMethod: {
-            [kafka.topics.newDevice]: httpMethods.post,
-            [kafka.topics.updateDevice] : httpMethods.put
+            // [kafka.topics.newDevice]: httpMethods.post,
+            // [kafka.topics.updateDevice] : httpMethods.put
         },
-        host: process.env['KAFKA_HOST'],
+        hosts: process.env['KAFKA_HOSTS'].split(","),
+        groupId: process.env['KAFKA_CONSUMER_GROUP'],
         topicOptions: {
             autoCommit: false,
             fetchMaxWaitMs: 1000,
@@ -40,7 +42,7 @@ export default {
         consumerGroupOptions: {
             // connect directly to kafka broker (instantiates a KafkaClient)
             kafkaHost: process.env['KAFKA_HOST'],
-            groupId: process.env['CONSUMER_GROUP'],
+            groupId: process.env['KAFKA_CONSUMER_GROUP'],
             autoCommit: true,
             autoCommitIntervalMs: 5000,
             sessionTimeout: 15000,
