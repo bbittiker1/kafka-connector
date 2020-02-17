@@ -5,8 +5,6 @@ NodeJS server that connects to Kafka topic and persists messages to a datastore.
 3.) npm run start-producer 
 4.) npm run start-server
 
-For kafka configuration help: https://confluence-lvs.prod.mcafee.com/pages/viewpage.action?spaceKey=SHP&title=Kafka+Docker+setup
-
 Kafka configurations:
 docker exec -it kafka2 /bin/bash
 
