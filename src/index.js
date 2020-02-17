@@ -15,35 +15,14 @@ const app = express();
     logger.debug(`ENV ${e}: ${process.env[e]}`)
 );
 
-// async function doKafka() {
-//     const kafka = kafkaInstance(config);
-//     const consumer = kafka.consumer({ groupId: config.kafka.groupId });
-//     await consumer.connect();
-//
-//     config.kafka.topics.map(async t => {
-//         await consumer.subscribe({topic: t, fromBeginning: true});
-//     });
-//
-//     await consumer.run({
-//         eachMessage: async ({ topic, partition, message }) => {
-//             console.log({
-//                 topic: topic,
-//                 partition: partition,
-//                 value: message.value.toString()
-//             })
-//         },
-//     })
-// }
-
 (async () => {
     try {
-        const port = config.port;
-        app.listen(port, () => {
-            logger.info(`App listening on port ${port}!`);
+        // const port = config.port;
+        const server = app.listen(config.port, () => {
+            logger.info(`App listening on port ${server.address().port}!`);
 
-            config.kafka.topics.map(async topic => {
-                new ConsumerService(config, topic).start();
-            });
+            // Start Kafka consumer service.
+            new ConsumerService(config).start();
         });
     } catch(e) {
         logger.error(e);

@@ -1,17 +1,20 @@
 import {kafkaInstance} from "./kafka.service";
 import { RestService } from "../rest.service";
-
+import { formatMessage } from "./message.service";  // TODO: ADD MESSAGE TYPE
 import logger from '../../util/logger';
 
-const util = require('util');
-
 export default class ConsumerService {
-    constructor(config, topic){
-        // this.consumerGroupOptions = appConfig.kafka.consumerGroupOptions;
-        this.topic = topic;
-        this.restService = new RestService( this.topic );
-        this.kafka = kafkaInstance(config);
+    constructor(config){
         this.config = config;
+        this.kafka = kafkaInstance(this.config);
+        this.topics = this.config.kafka.topics;
+
+        this.restService = new RestService();
+    }
+
+    async formatUrl(messageType, options) {
+        // TODO: IMPLEMENT message type for different urls.
+        return this.config.baseUrl + options.mac;
     }
 
     async persist(device) {
@@ -19,29 +22,15 @@ export default class ConsumerService {
             return;
         }
 
-        const message = JSON.parse(device);
-
-        if (!message.mac) {
-            return;
-        }
-
         try {
-            message.mac = message.mac.replace(/:/g, "");
+            const messageType = 0;
+            const { mac, message } = await formatMessage(device, messageType);
+            const url = await this.formatUrl(messageType, { mac: mac, message: message });
 
-            const url = this.config.baseUrl + message.mac;
-
-            const cleanMessage = JSON.stringify({
-                "did": message.did,
-                "type": message.type,
-                "manufacturer": message.manufacturer,
-                "make": "",
-                "model": "4K",
-                "icon": "appletv"
-            });
-
-            return await this.restService.post(url, cleanMessage)
+            return await this.restService.post(url, message)
         } catch(e) {
             logger.error(e);
+            throw e;
         }
     }
 
@@ -49,23 +38,23 @@ export default class ConsumerService {
         const consumer = this.kafka.consumer({ groupId: this.config.kafka.groupId });
         await consumer.connect();
 
-        this.config.kafka.topics.map(async t => {
-            await consumer.subscribe({topic: t, fromBeginning: true});
+        this.topics.map(async t => {
+            await consumer.subscribe({ topic: t, fromBeginning: true });
         });
 
         await consumer.run({
             eachMessage: async ({ topic, partition, message }) => {
-
                 const device = message.value.toString();
 
-                logger.info(util.format('%o', {
-                    topic: topic,
-                    partition: partition,
-                    value: device
-                }));
+                logger.debug({ topic: topic, partition: partition, value: device });
 
-                await this.persist(device);
+                await this.persist(device)
+                    .then(res => {
+                        logger.debug(res.config);
+                        logger.info(`status: ${res.status} statusText: ${res.statusText || ""}`)
+                    })
+                    .catch(err => logger.error(err));
             },
         })
     };
-}
+};

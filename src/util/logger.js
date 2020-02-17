@@ -1,6 +1,8 @@
 const { createLogger, format, transports } = require('winston');
 const path = require('path');
 const PROJECT_ROOT = path.join(__dirname, '..');
+const util = require('util');
+
 const appRoot = require('app-root-path');
 
 import appConfig from '../config/app';
@@ -17,12 +19,20 @@ const formatLogArguments = (args) => {
 
     if (stackInfo) {
         // get file path relative to project root
-        var calleeStr = '[' + stackInfo.relativePath + ':' + stackInfo.line + ']';
+        const callee = '[' + stackInfo.relativePath + ':' + stackInfo.line + ']';
 
-        if (typeof (args[0]) === 'string') {
-            args[0] = calleeStr + ' ' + args[0]
-        } else {
-            args.unshift(calleeStr)
+        const argType = (typeof (args[0]));
+
+        switch (argType) {
+            case 'string':
+                args[0] = `${callee} ${args[0]}`;
+                break;
+            case 'object':
+                const fmtObject = util.format('%o', args[0]);
+                args[0] = `${callee} ${fmtObject}`;
+                break;
+            default:
+                args.unshift(callee);
         }
     }
 

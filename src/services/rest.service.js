@@ -6,44 +6,43 @@ import { getHmac } from "./auth.service";
 import logger from "../util/logger";
 
 export class RestService  {
-    constructor( topic ) {
+    constructor() {
         this.baseUrl = config.baseUrl;
-        this.topic = topic;
-        // this.method = config.kafka.topicRestMethod[topic];
 
-        this._axiosInstance = axios.create({
+        this._http = axios.create({
             baseURL: this.baseUrl,
             timeout: 15000,
+            headers: {
+                'Content-Type': 'application/json'
+            }
         });
 
-        this._axiosInstance.defaults.headers.common['Content-Type'] = "application/json";
+        this._http.interceptors.request.use( config => {
+            config.headers.post['Authorization'] = getHmac(httpMethods.post, config.url, config.data);
+            return config;
+        });
     }
 
-    async post(url, message) {
+    async post(url, data) {
         try {
-            // const hmac =  getHmac(httpMethods.post, url, message);
-            this._axiosInstance.defaults.headers.post['Authorization'] = getHmac(httpMethods.post, url, message);
-
-            // fetch data from a url endpoint
-            return await this._axiosInstance.post(url, message);
+            return await this._http.post(url, data);
         } catch(err) {
             logger.error(err);
             throw err;
         }
     }
 
-    async put(message) {
+    async put(url, data) {
         try {
-            // fetch data from a url endpoint
-            return await axios.put(this.baseUrl, message);
+            return await this._http.put(url, data);
         } catch(err) {
             logger.error(err);
         }
     }
 
-    async get(message) {
+    async get(url) {
         try {
-            return await axios.get(this.baseUrl)
+            return await this._http.get(url)
         } catch(err) {
             logger.error(err);
         }
