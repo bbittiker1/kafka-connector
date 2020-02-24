@@ -5,9 +5,13 @@ export const httpMethods = {
     get: 'GET'
 };
 
-export const kafka = {
-    // topics: {
-    //     newDevice: "new_device",
-    //     updateDevice: "update_device"
-    // }
+// export const updateByDid = "by/did";
+
+export const kafkaConstants = {
+    topics: {
+        newDevice: "new_device",
+        updateDevice: "update_device",
+        deviceEvent: "device_event",
+        fingerprintChanged: "fingerprint_changed"
+    }
 };

@@ -1,11 +1,11 @@
+// import config from '../config/config';
+
 const { createLogger, format, transports } = require('winston');
 const path = require('path');
 const PROJECT_ROOT = path.join(__dirname, '..');
 const util = require('util');
 
 const appRoot = require('app-root-path');
-
-import appConfig from '../config/app';
 
 const { combine, timestamp, printf, prettyPrint, splat, colorize } = format;
 
@@ -79,19 +79,18 @@ const _logger = createLogger({
     ),
     transports: [
         new transports.Console({
-            level: appConfig.logLevel || 'debug'
+            level: process.env['LOG_LEVEL'] || 'debug'
         }),
         new transports.File({
             filename: `${appRoot}/logs/info.log`,
-            level: appConfig.logLevel || 'debug'
+            level: process.env['LOG_LEVEL'] || 'debug'
         }),
         new transports.File({
             filename: `${appRoot}/logs/app.log`,
-            level: appConfig.logLevel
+            level: process.env['LOG_LEVEL'] || 'debug'
         })
     ]
 });
-
 
 class Logger {
     constructor(logger) {

@@ -1,4 +1,4 @@
-import appConfig from '../config/app';
+import appConfig from '../config/config';
 import CryptoJS from 'crypto-js';
 // import logger from '../util/logger';
 

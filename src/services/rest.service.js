@@ -1,6 +1,7 @@
+import config from "../config/config";
+
 import axios from "axios";
 
-import config from "../config/app";
 import { httpMethods } from "../config/constants";
 import { getHmac } from "./auth.service";
 import logger from "../util/logger";
@@ -37,6 +38,7 @@ export class RestService  {
             return await this._http.put(url, data);
         } catch(err) {
             logger.error(err);
+            throw err;
         }
     }
 
@@ -45,6 +47,7 @@ export class RestService  {
             return await this._http.get(url)
         } catch(err) {
             logger.error(err);
+            throw err;
         }
     }
 }

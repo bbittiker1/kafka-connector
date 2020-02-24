@@ -4,14 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \\\"Error: no src/test specified\\\" && exit 1",
-    "start-producer": "cp ./config/.env.local src/test/.env;nodemon --exec babel-node --require dotenv/config src/test/producer/producer.service.js",
-    "start-consumer": "cp ./config/.env.local ./.env;nodemon --exec babel-node src/services/kafka/consumer.service.js",
+    "start-create-producer": "cp ./config/.env.local ./.env;KAFKA_PRODUCER_TOPIC=new_device nodemon $NODE_DEBUG_OPTION --exec babel-node --require dotenv/config src/services/kafka/producer.js",
+    "start-update-producer": "cp ./config/.env.local ./.env;KAFKA_PRODUCER_TOPIC=shp-fp-csdev_1234 nodemon $NODE_DEBUG_OPTION --exec babel-node --require dotenv/config src/services/kafka/producer.js",
     "start-server": "cp ./config/.env.local ./.env;nodemon --exec babel-node src/index.js",
-    "start-server-docker": "node -r esm index.js",
-    "start-producer-docker": "node -r esm services/kafka-producer-service.js"
+    "start-server-docker": "node -r esm index.js"
   },
-  "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -55,6 +52,7 @@
     "@babel/preset-env": "^7.4.5",
     "@babel/register": "^7.4.4",
     "csv-parser": "^2.3.2",
+    "ip": "^1.1.5",
     "nodemon": "^2.0.2"
   }
 }
